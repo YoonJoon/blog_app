@@ -1,8 +1,16 @@
+# blog/model.py
+
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 # Create your models here.
+class ArticlePublishedManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=Article.Status.PUBLISHED)
+        pass
+    pass
+
 
 class Article(models.Model):
 
@@ -21,7 +29,9 @@ class Article(models.Model):
                                 choices=Status.choices,
                                 default=Status.DRAFT
                             )
-    
+    objects = models.Manager() #The default manager
+    publishedArticles = ArticlePublishedManager() #The custom manager
+
     class Meta:
         ordering = ['-publish']
         indexes = [
