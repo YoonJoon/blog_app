@@ -3,6 +3,7 @@
 from django.db import models
 from django.utils import timezone
 from django.contrib.auth.models import User
+from django.urls import reverse
 
 # Create your models here.
 class ArticlePublishedManager(models.Manager):
@@ -20,7 +21,8 @@ class Article(models.Model):
 
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name='blog_articles')
     title = models.CharField(max_length=250)
-    slug = models.SlugField(max_length=250)
+    slug= models.SlugField(max_length=250, unique_for_date='publish')
+    # slug = models.SlugField(max_length=250)
     body = models.TextField()
     publish = models.DateTimeField(default=timezone.now)
     created = models.DateTimeField(auto_now_add=True)
@@ -42,5 +44,15 @@ class Article(models.Model):
     def __str__(self):
         return self.title
         pass
-
+    
+    def get_canonical_url(self):
+        return reverse('blog:article_details', 
+                        args=[
+                                self.publish.year,
+                                self.publish.month,
+                                self.publish.day,
+                                self.slug
+                            ]
+                        )
+        pass
     pass
