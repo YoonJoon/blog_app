@@ -7,12 +7,18 @@ from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from .form import CommentForm
 from django.views.decorators.http import require_POST
+from taggit.models import Tag
 
 
 # Create your views here.
-def list_of_articles(request):
+def list_of_articles(request, tag_slug = None):
     articles = Article.publishedArticles.all()
     #print(articles)
+
+    tag = None
+    if tag_slug:
+        tag = get_object_or_404(Tag, slug=tag_slug)
+        articles = articles.filter(tags__in=[tag])
 
     paginator = Paginator(articles, 2)
     page_number = request.GET.get('page', 1)
@@ -24,7 +30,7 @@ def list_of_articles(request):
         articles = paginator.page(1)
 
     # return HttpResponse("this is list of articles webpage...")
-    return render(request, 'blog/list.html', {'articles': articles})
+    return render(request, 'blog/list.html', {'articles': articles, 'tag': tag})
     pass
 
 def article_details(request, year, month, day, article):
