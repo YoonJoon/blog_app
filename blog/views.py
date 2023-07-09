@@ -5,7 +5,7 @@ from .models import Article, Comment
 from django.http import HttpResponse
 from django.http import Http404
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .form import CommentForm
+from .forms import CommentForm, SearchForm
 from django.views.decorators.http import require_POST
 from taggit.models import Tag
 from django.db.models import Count
@@ -87,5 +87,36 @@ def comment_for_article(request, article_id):
         pass
 
     return render(request, 'blog/comment.html', {'article': article, 'form': form, 'comment': comment})
+    pass
 
+def article_search(request):
+    query = 'linux'
+    results = []
+    
+    results = Article.objects.raw("SELECT * FROM blog_article WHERE MATCH (title, body) AGAINST (%s)", [query])
+    for result in results:
+        print(result)
+        pass
+    
+    return HttpResponse("Working")
+    pass
+
+def article_search(request):
+    form = SearchForm()
+    query = None
+    results = []
+
+    if 'query' in request.GET:
+        
+        form = SearchForm(request.GET)
+        if form.is_valid():
+            query = form.cleaned_data['query']
+            results = Article.objects.raw("SELECT * FROM blog_article WHERE MATCH (title, body) AGAINST (%s)", [query])
+            pass
+        pass
+    
+    return render(request,
+            'blog/search.html',
+            {'form': form, 'query': query,'results': results}
+        )
     pass
